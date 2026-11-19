@@ -1,0 +1,67 @@
+/* APEX Global Exchange — стили, дополняющие Tailwind CSS */
+:root{color-scheme:dark;--bg:#0f172a;--card:#1e293b;--bd:#334155;--tx:#e2e8f0;--mut:#94a3b8;--inp:#0f172a;--btn:#334155;--hover:#273449;--hdr:#0b1220;--up:#10b981;--dn:#ef4444}
+
+*{transition:background-color .35s,border-color .35s,color .35s}
+body{font-family:Inter,Roboto,sans-serif;background:var(--bg);color:var(--tx)}
+.num{font-variant-numeric:tabular-nums}
+.up{color:var(--up)}.down{color:var(--dn)}
+.hdr{background:var(--hdr)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:.75rem}
+.row:hover{background:var(--hover)}
+
+/* Переопределение цветов Tailwind под тему (выше по специфичности, чем классы CDN) */
+html .text-slate-400{color:var(--mut)}
+html .text-slate-300,html .text-slate-100{color:var(--tx)}
+html .text-emerald-400{color:var(--up)}
+html .text-red-400{color:var(--dn)}
+html .border-slate-600,html .border-slate-700,html .border-slate-800{border-color:var(--bd)}
+html .bg-slate-900{background:var(--inp)}
+html .bg-slate-700{background:var(--btn)}
+html .hover\:bg-slate-600:hover{background:var(--bd)}
+input{font-size:16px;background:var(--inp);border:1px solid var(--bd);border-radius:.5rem;padding:.5rem .75rem;width:100%;outline:none}
+input:focus{border-color:var(--up)}
+
+/* Индикатор статуса рынка */
+.live{width:.5rem;height:.5rem;border-radius:9999px;background:var(--up);animation:pl 2s infinite}
+@keyframes pl{0%{box-shadow:0 0 0 0 rgba(16,185,129,.6)}70%,100%{box-shadow:0 0 0 7px rgba(16,185,129,0)}}
+
+/* Мигание цен */
+.fu{animation:fu .8s}.fd{animation:fd .8s}
+@keyframes fu{from{background:rgba(16,185,129,.35)}to{background:transparent}}
+@keyframes fd{from{background:rgba(239,68,68,.35)}to{background:transparent}}
+
+/* Бегущая строка индексов */
+.marquee{display:inline-flex;gap:3rem;white-space:nowrap;animation:mq 40s linear infinite}
+@keyframes mq{to{transform:translateX(-50%)}}
+
+/* Индикатор влияния новости */
+.imp{display:inline-flex;align-items:center;gap:.35rem;font-size:.75rem;font-weight:600;padding:.15rem .5rem;border-radius:9999px;border:1px solid currentColor}
+.imp i{width:.4rem;height:.4rem;border-radius:9999px;background:currentColor;animation:bl 1s infinite}
+@keyframes bl{50%{opacity:.2}}
+
+/* Тосты */
+.toast{animation:ti .3s ease-out}
+@keyframes ti{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Навигация, фильтры, модальное окно */
+.tab{padding:.5rem 1.1rem;font-size:.875rem;font-weight:600;white-space:nowrap;border-radius:.6rem;color:var(--up);background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.45);cursor:pointer;transition:transform .15s,background-color .2s,box-shadow .2s,color .2s}
+.tab:hover{background:rgba(16,185,129,.24);transform:translateY(-1px);box-shadow:0 4px 14px rgba(16,185,129,.25)}
+.tab:active{transform:scale(.96)}
+.tab:focus-visible{outline:2px solid var(--up);outline-offset:2px}
+.tab.on{background:var(--up);border-color:var(--up);color:#0f172a;box-shadow:0 4px 14px rgba(16,185,129,.35)}
+.chip{padding:.35rem .9rem;border-radius:9999px;border:1px solid var(--bd);font-size:.875rem}
+.chip:hover{border-color:var(--up)}
+.chip.on{background:var(--up);border-color:var(--up);color:#0f172a;font-weight:600}
+.view.hidden,#modal.hidden{display:none!important}
+
+/* Адаптивность */
+table{min-width:34rem}
+.tab{flex-shrink:0}
+@media (max-width:640px){
+  .tab{white-space:normal;line-height:1.15;padding:.5rem .35rem;font-size:.75rem;text-align:center}
+  .marquee{animation-duration:30s}
+}
+

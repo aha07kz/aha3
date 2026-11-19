@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0f172a">
+<title>APEX Global Exchange</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-screen">
+
+<!-- ШАПКА -->
+<header class="hdr border-b border-slate-700">
+  <div class="flex flex-wrap items-center justify-between gap-4 px-4 py-3">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-emerald-500 flex items-center justify-center font-extrabold text-slate-900">A</div>
+      <div><div class="font-extrabold text-lg leading-none">APEX Global Exchange</div>
+      <div class="text-xs text-slate-400 mt-1 flex items-center gap-2"><span class="live"></span><span>Рынок открыт • NYSE / NASDAQ</span><span class="num" id="clock"></span></div></div>
+    </div>
+    <nav class="grid grid-cols-3 gap-2 order-last w-full md:order-none md:w-auto md:flex">
+      <button data-v="terminal" class="tab on">Торговый терминал</button>
+      <button data-v="catalog" class="tab">Каталог</button>
+      <button data-v="account" class="tab">Личный кабинет</button>
+    </nav>
+    <div class="flex items-center gap-4">
+      <div class="hidden sm:block text-sm text-slate-400">Капитализация рынка <span id="mcap" class="num text-slate-100 font-semibold ml-1"></span></div>
+    </div>
+  </div>
+  <div class="overflow-hidden border-t border-slate-800 py-2 text-sm"><div id="indices" class="marquee"></div></div>
+</header>
+
+<main id="v-terminal" class="view p-4 grid gap-4 lg:grid-cols-12">
+
+  <!-- ВОТЧЛИСТ -->
+  <section class="lg:col-span-3 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-1" id="watch"></section>
+
+  <!-- ГРАФИК, СТАКАН, ЛЕНТА -->
+  <section class="lg:col-span-6 space-y-4">
+    <div class="card p-4">
+      <div class="flex flex-wrap items-end justify-between gap-2 mb-3">
+        <div><div class="text-xl font-bold" id="selName"></div><div class="text-xs text-slate-400" id="selTicker"></div></div>
+        <div class="text-right"><div class="text-3xl font-extrabold num" id="selPrice"></div><div class="num text-sm" id="selChg"></div></div>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3 text-sm"><div><div class="text-xs text-slate-400">Капитализация</div><div id="sCap" class="num font-semibold"></div></div><div><div class="text-xs text-slate-400">Объём 24ч</div><div id="sVol" class="num font-semibold"></div></div><div><div class="text-xs text-slate-400">Макс. дня</div><div id="sHi" class="num font-semibold"></div></div><div><div class="text-xs text-slate-400">Мин. дня</div><div id="sLo" class="num font-semibold"></div></div></div>
+      <div class="h-64"><canvas id="chart"></canvas></div>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="card p-4">
+        <div class="font-semibold mb-2">Стакан ордеров</div>
+        <div class="flex justify-between text-xs text-slate-400 mb-1"><span>Цена</span><span>Объём</span></div>
+        <div id="asks" class="text-sm num"></div>
+        <div id="spread" class="my-1 py-1 text-center text-xs text-slate-400 border-y border-slate-700"></div>
+        <div id="bids" class="text-sm num"></div>
+      </div>
+      <div class="card p-4">
+        <div class="font-semibold mb-2">Лента сделок</div>
+        <div class="flex justify-between text-xs text-slate-400 mb-1"><span>Время</span><span>Цена</span><span>Объём</span></div>
+        <div id="tape" class="text-sm num h-[19rem] overflow-hidden"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ТОРГОВЫЙ ТЕРМИНАЛ -->
+  <section class="lg:col-span-3 space-y-4">
+    <div class="card p-4">
+      <div class="text-xs text-slate-400">Свободные средства</div>
+      <div class="text-2xl font-extrabold num" id="cash"></div>
+      <div class="grid grid-cols-2 gap-2 mt-3 text-sm">
+        <div><div class="text-xs text-slate-400">Стоимость портфеля</div><div class="num font-semibold" id="pv"></div></div>
+        <div><div class="text-xs text-slate-400">Прибыль / убыток</div><div class="num font-semibold" id="pl"></div></div>
+      </div>
+    </div>
+    <div class="card p-4 space-y-3">
+      <div class="grid grid-cols-2 gap-1 bg-slate-900 rounded-lg p-1 text-sm font-semibold">
+        <button id="bBuy" class="py-2 rounded-md">Купить</button><button id="bSell" class="py-2 rounded-md">Продать</button>
+      </div>
+      <div class="grid grid-cols-2 gap-1 text-sm">
+        <button id="tMkt" class="py-1.5 rounded-md border border-slate-600">Рыночный</button><button id="tLim" class="py-1.5 rounded-md border border-slate-600">Лимитный</button>
+      </div>
+      <label class="block text-xs text-slate-400">Количество
+        <div class="flex gap-2 mt-1"><input id="qty" type="number" min="1" step="1" value="1"><button id="maxBtn" class="px-3 text-xs rounded-lg bg-slate-700 hover:bg-slate-600">Макс</button></div></label>
+      <label id="limWrap" class="block text-xs text-slate-400 hidden">Лимитная цена<input id="lim" type="number" step="0.01" class="mt-1"></label>
+      <div class="space-y-1 text-sm border-t border-slate-700 pt-3">
+        <div class="flex justify-between"><span class="text-slate-400">Сумма сделки</span><span id="sub" class="num"></span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Комиссия 0,1%</span><span id="fee" class="num"></span></div>
+        <div class="flex justify-between font-bold"><span id="totLbl"></span><span id="total" class="num"></span></div>
+      </div>
+      <button id="submit" class="w-full py-3 rounded-lg font-bold text-slate-900 transition active:scale-95"></button>
+    </div>
+    <div class="card p-4">
+      <div class="font-semibold mb-2">Отложенные ордера</div>
+      <div id="pending" class="text-sm space-y-1"></div>
+    </div>
+  </section>
+
+  <section class="lg:col-span-12 card p-4">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-2"><div class="font-semibold">Рыночные новости</div><div class="text-xs text-slate-400">Reuters · Bloomberg · CNBC · Financial Times</div></div>
+    <div id="news" class="max-h-80 overflow-auto"></div>
+  </section>
+</main>
+
+<main id="v-catalog" class="view hidden p-4 space-y-4">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-wrap gap-2">
+      <button data-f="all" class="chip on">Все</button><button data-f="stock" class="chip">Акции</button><button data-f="bond" class="chip">Облигации</button><button data-f="etf" class="chip">ETF (Фонды)</button><button data-f="fx" class="chip">Валюта</button>
+    </div>
+    <div class="w-full sm:w-72"><input id="cSearch" placeholder="Поиск по тикеру или названию" autocomplete="off"></div>
+  </div>
+  <div id="cGrid" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></div>
+</main>
+
+<main id="v-account" class="view hidden p-4 grid gap-4 lg:grid-cols-12">
+  <section class="lg:col-span-12 grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="card p-4"><div class="text-xs text-slate-400">Общая стоимость</div><div id="kEq" class="text-2xl font-extrabold num "></div></div><div class="card p-4"><div class="text-xs text-slate-400">Свободные средства</div><div id="kCash" class="text-2xl font-extrabold num "></div></div><div class="card p-4"><div class="text-xs text-slate-400">Стоимость позиций</div><div id="kPV" class="text-2xl font-extrabold num "></div></div><div class="card p-4"><div class="text-xs text-slate-400">Прибыль / убыток</div><div id="kPL" class="text-2xl font-extrabold num "></div></div>
+  </section>
+  <section class="lg:col-span-4 card p-4">
+    <div class="font-semibold mb-2">Распределение активов</div>
+    <div class="h-52"><canvas id="pie"></canvas></div>
+    <div id="alloc" class="text-sm space-y-1 mt-3"></div>
+  </section>
+  <section class="lg:col-span-8 card p-4 overflow-x-auto">
+    <div class="font-semibold mb-2">Портфель</div>
+    <table class="w-full text-sm num">
+      <thead class="text-xs text-slate-400 text-right"><tr><th class="text-left py-1">Тикер</th><th>Кол-во</th><th>Ср. цена</th><th>Стоимость</th><th>P/L $</th><th>P/L %</th><th></th></tr></thead>
+      <tbody id="port" class="text-right"></tbody>
+    </table>
+  </section>
+  <section class="lg:col-span-12 card p-4 overflow-x-auto">
+    <div class="font-semibold mb-2">История операций</div>
+    <table class="w-full text-sm num">
+      <thead class="text-xs text-slate-400 text-right"><tr><th class="text-left py-1">Время</th><th class="text-left py-1">Операция</th><th class="text-left py-1">Тикер</th><th class="py-1">Кол-во</th><th class="py-1">Цена исполнения</th><th class="py-1">Комиссия</th><th class="py-1">Сумма</th></tr></thead>
+      <tbody id="hist" class="text-right"></tbody>
+    </table>
+  </section>
+</main>
+
+<div id="modal" class="hidden fixed inset-0 z-40 bg-black/60 flex items-center justify-center p-4"><div id="mBody" class="card p-5 sm:p-6 w-full max-w-lg max-h-[90vh] overflow-auto"></div></div>
+
+<div id="toasts" class="fixed top-4 right-4 left-4 sm:left-auto sm:w-96 space-y-2 z-50"></div>
+
+<script src="data.js"></script>
+<script src="ui.js"></script>
+<script src="trading.js"></script>
+<script src="render.js"></script>
+<script src="market.js"></script>
+<script src="events.js"></script>
+<script src="views.js"></script>
+<script src="news.js"></script>
+<script src="main.js"></script>
+
+
+</body>
+</html>
